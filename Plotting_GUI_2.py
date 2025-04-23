@@ -58,6 +58,26 @@ def plotting_script():
     with open(file_path, 'r') as file:
         code = file.read()
         exec(code)
+
+def check_fft():
+    global check_fft_val
+    global check_fit_val
+    if fft_var.get():
+        print('Will do!')
+    else:
+        print('Will not do.')
+    check_fft_val = fft_var.get()
+    check_fit_val = fit_var.get()
+        
+def check_fit():
+    global check_fft_val
+    global check_fit_val
+    if fit_var.get():
+        print('Will do!')
+    else:
+        print('Will not do.')
+    check_fit_val = fit_var.get()
+    check_fft_val = fft_var.get()
 																							
 # Create the root window
 window = Tk()
@@ -79,8 +99,8 @@ window.rowconfigure(6, weight=row_weight)
 window.columnconfigure(0, weight=col_weight)
 window.columnconfigure(1, weight=col_weight)
 window.columnconfigure(2, weight=col_weight)
-#window.columnconfigure(3, weight=col_weight)
-#window.columnconfigure(4, weight=col_weight)
+window.columnconfigure(3, weight=col_weight)
+window.columnconfigure(4, weight=col_weight)
 #window.columnconfigure(5, weight=col_weight)
 
 # Create a File Explorer label
@@ -96,13 +116,21 @@ label_slice = Label(window, text="Select data slice")
 sliced = ttk.Combobox(window)
 sliced.bind("<<ComboboxSelected>>", pick_slice)
 
-label_file_explorer.grid(column = 0, row = 0, columnspan=3, sticky=EW)
-button_explore.grid(column = 1, row = 1)
+fft_var = BooleanVar()
+fit_var = BooleanVar()
+check_fft = ttk.Checkbutton(window, text='Plot FFT?', command=check_fft, variable=fft_var)
+check_fit = ttk.Checkbutton(window, text='Fit FFT?', command=check_fit, variable=fit_var)
+
+label_file_explorer.grid(column = 0, row = 0, columnspan=5, sticky=EW)
+middle_col = 2
+button_explore.grid(column = middle_col, row = 1)
 #button_loader.grid(column = 1,row = 2)
-label_channel.grid(column = 1, row = 2)
-channeled.grid(column = 1,row = 3)
-label_slice.grid(column = 1, row = 4)
-sliced.grid(column = 1,row = 5)
-button_plotter.grid(column = 1,row = 6)
+label_channel.grid(column = middle_col, row = 2)
+channeled.grid(column = middle_col,row = 3)
+label_slice.grid(column = middle_col, row = 4)
+sliced.grid(column = middle_col,row = 5)
+button_plotter.grid(column = middle_col,row = 6)
+check_fft.grid(column = middle_col+1,row = 5)
+check_fit.grid(column = middle_col+1,row = 6)
 # Let the window wait for any events
 window.mainloop()

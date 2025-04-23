@@ -30,8 +30,10 @@ Y_scale = 'linear'
 #Choose whether to calculate and plot the FFT
 Do_FFT = 1 # "1" to calculate the FFT. "0" does not calculate it.
 #If Do_FFT is "0" then plotting and fitting will not happen
-Plot_FFT = 0 # "1" to also plot the FFT of the data. "0" to only plot data
-Fit_FFT = 0 # "1" to include a fit to the FFT. "0" to not include 
+global check_fft_val
+global check_fit_val
+Plot_FFT = check_fft_val # "1" to also plot the FFT of the data. "0" to only plot data
+Fit_FFT = check_fit_val # "1" to include a fit to the FFT. "0" to not include 
 downsampling_number = 1
 
 #Choose to export data. Raw data as csv or txt file, and the png of plot
