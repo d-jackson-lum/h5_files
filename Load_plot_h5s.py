@@ -16,7 +16,8 @@ file_name = 'Stuck_bead_2nd_min_378fps.h5'
 #'Marker_during_phone_recording.h5'
 
 #Choosing the desired channel and setting the time range to be plotted
-Data_Channel = 'Force HF' #Will proccess all data associated with this channel #e.g. Force 1x, Force 2x, etc.
+#Data_Channel = 'Force HF' #Will proccess all data associated with this channel #e.g. Force 1x, Force 2x, etc.
+
 start_time = 2
 end_time = 3
 
@@ -29,8 +30,8 @@ Y_scale = 'linear'
 #Choose whether to calculate and plot the FFT
 Do_FFT = 1 # "1" to calculate the FFT. "0" does not calculate it.
 #If Do_FFT is "0" then plotting and fitting will not happen
-Plot_FFT = 1 # "1" to also plot the FFT of the data. "0" to only plot data
-Fit_FFT = 1 # "1" to include a fit to the FFT. "0" to not include 
+Plot_FFT = 0 # "1" to also plot the FFT of the data. "0" to only plot data
+Fit_FFT = 0 # "1" to include a fit to the FFT. "0" to not include 
 downsampling_number = 1
 
 #Choose to export data. Raw data as csv or txt file, and the png of plot
@@ -51,11 +52,15 @@ import lumicks.pylake as lk
 from h5_functions import Get_Slices, Get_FFT, fit_analytical_lorentzian, Prepare_export#, lorentzian
 from lumicks.pylake.force_calibration.power_spectrum import PowerSpectrum
 import pandas as pd
+import sys
 #import numpy as np
 #from scipy.fft import rfft, rfftfreq # fft, fftfreq ## fft and rfft do the same thing, but rfft eliminates symmettry around 0
 #import sys
 #from h5_options import Data_Slice
 #import h5py
+
+#global global_test
+#print(global_test)
 
 """
 Load the file
@@ -71,7 +76,19 @@ Finds all slices present for the chosen data channel
 Will proccess all data associated with this channel #e.g. Force HF: Force 1x, Force 2x, etc.
 """
 
-Slices = Get_Slices(file, Data_Channel)
+global Data_Channel
+Slices, Channels, checker = Get_Slices(file, Data_Channel)
+#print(Slices)
+#if checker == 0:
+#    sys.exit('No matching channels in this file. Try again using the following data channel options: ' )#+ channels)
+
+global Slice
+if Slice == 'All Slices':
+    print('Will analyze...')
+    print(Slices)
+else:
+    Slices = [Slice]
+    print('Will analyze ' + Slice)
 
 for s in Slices:
     
@@ -82,7 +99,7 @@ for s in Slices:
     time_ns = (timestamp - timestamp[0])
     time_s = time_ns*1e-9
     Nd = len(data)
-    
+    #print(Nd)
     """
     Check for empty slice -> skip if empty
     """
@@ -144,7 +161,7 @@ for s in Slices:
     Y_plt = data_plt
     
     plt.figure()
-    plt.plot(X_plt, Y_plt) #, label='Data', color='blue')
+    plt.plot(X_plt, Y_plt, label='Data', color='C7') #C7 is a gray color
     plt.xlabel(Xaxis)
     plt.ylabel(Yaxis)
     plt.xscale(X_scale)
@@ -181,8 +198,8 @@ for s in Slices:
         if Plot_FFT:
             plt.figure#(figsize=(8, 6))
             #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
-            plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='blue')
-            if Fit_FFT: plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='red')
+            plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
+            if Fit_FFT: plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
             plt.xlabel('Frequencies')
             plt.ylabel('Amplitudes (V**2/Hz)')
             plt.xscale('log')
@@ -205,8 +222,8 @@ for s in Slices:
                 else:
                     framed_data.to_csv(Save_as + ' FFT.' + export_type)
 
-print('Analysis completed.')
-
+print('Analysis completed')
+#sys.exit('Analysis completed')
 
 
 

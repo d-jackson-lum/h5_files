@@ -7,7 +7,6 @@ Created on Fri Apr 18 10:12:52 2025
 
 import numpy as np
 from scipy.fft import rfft, rfftfreq # fft, fftfreq ## fft and rfft do the same thing, but rfft eliminates symmettry around 0
-import sys
 from collections import namedtuple
 import math
 from itertools import product
@@ -19,10 +18,17 @@ import pandas as pd
 
 def Get_Slices(file, Data_Channel):
     Channels = sorted(file.h5.items())
+    #N_channels = len(Channels)
     channel = ''
-    channels = ''
+    #channels = ''
+    ind = 0
+    #channels = ar.array(["String used to record channel names","String used to record channel names"])
+    #channels = np.resize(channels, N_channels)
+    channels = []
     for channel, slices in Channels:
-        channels += channel + ', '
+        #channels += channel + ', '
+        #channels[ind] = channel
+        channels.append(channel)
         data_slices = []
         if Data_Channel == channel:
             for sli in slices:
@@ -31,13 +37,23 @@ def Get_Slices(file, Data_Channel):
             break
         else:
             checker = 0
-            
-    if checker == 0:
-        sys.exit('No matching channels in this file. Try again using the following data channel options: ' + channels)
-    
-    return data_slices
+        ind += 1
+    return data_slices, channels, checker
 
-
+def Get_All_Slices(file):
+    Channels = sorted(file.h5.items())
+    channel = ''
+    ind = int(0)
+    Data_options = [[],[]]
+    N_channels = len(Channels)
+    Data_options_big = Data_options + [[]]*int(N_channels - 1)
+    for channel, slices in Channels:
+        data_slices = [channel]
+        for sli in slices:
+            data_slices.append(sli)
+        Data_options_big[ind]=data_slices
+        ind +=int(1)
+    return Data_options_big
 
 def Get_FFT(data, time_0, time_1):
     
