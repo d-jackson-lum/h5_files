@@ -50,11 +50,13 @@ def pick_slice(Data_Channel):
     global Slice
     Slice = sliced.get()
     print(f"Selected slice: {Slice}")
+    check_check()
     #print(Slice)
 	
 def plotting_script():
     #show_message()
     file_path = 'C:/Users/DanielJackson/Documents/GitHub/h5_files/Load_plot_h5s.py'
+    check_check()
     with open(file_path, 'r') as file:
         code = file.read()
         exec(code)
@@ -78,6 +80,12 @@ def check_fit():
         print('Will not do.')
     check_fit_val = fit_var.get()
     check_fft_val = fft_var.get()
+
+def check_check():
+    global check_fft_val
+    global check_fit_val
+    check_fft_val = fft_var.get()
+    check_fit_val = fit_var.get()
 																							
 # Create the root window
 window = Tk()

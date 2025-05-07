@@ -50,6 +50,7 @@ End of User Inputs
 Import Modules
 """
 import matplotlib.pyplot as plt
+import scipy as sp
 import lumicks.pylake as lk
 from h5_functions import Get_Slices, Get_FFT, fit_analytical_lorentzian, Prepare_export#, lorentzian
 from lumicks.pylake.force_calibration.power_spectrum import PowerSpectrum
@@ -161,20 +162,35 @@ for s in Slices:
     
     X_plt = time_plt
     Y_plt = data_plt
+
+    IQR = sp.stats.iqr(Y_plt)
+    bin_width = 2 * IQR / (Nd**(1/3)) ##based on Freedman-Diaconis rule for data spread
+    start_bin = min(Y_plt)
+    end_bin = max(Y_plt)
+    histing_offset_percent = 0.25
+    histing_bins = int(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
     
-    plt.figure()
-    plt.plot(X_plt, Y_plt, label='Data', color='C7') #C7 is a gray color
-    plt.xlabel(Xaxis)
-    plt.ylabel(Yaxis)
-    plt.xscale(X_scale)
-    plt.yscale(Y_scale)
-    plt.title(plot_title)
+    fig = plt.figure()
+    gs = fig.add_gridspec(1, 2, hspace=0, wspace=0.01, width_ratios=[2,1])
+    (raw, histo) = gs.subplots(sharey=True)
+    fig.suptitle('Raw data with histogram')
+    raw.plot(X_plt, Y_plt, label='Data')
+    raw.set(xlabel=Xaxis, ylabel=Yaxis)
+    histo.hist(Y_plt, orientation='horizontal', bins = histing_bins, label='Histogram', color='C7')
+    histo.set(xlabel='Amplitude')
+    histo.axes.get_xaxis().set_visible(False)
+    histo.axes.get_yaxis().set_visible(False)
+    histo.axis('off')
+    fig.show()
+    
     if do_export: plt.savefig(Save_as + ' plot.png')
     plt.show()
     
     if do_export:
         framed_data = Prepare_export(X_plt,Y_plt,Xaxis,Yaxis)
         framed_data.to_csv(Save_as + '.' + export_type)
+    
+
     
     """
     Calculating the FFT and fit
