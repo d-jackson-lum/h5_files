@@ -103,6 +103,7 @@ def Set_end_time():
     global Start_value
     End_value = End_spinbox.get()
     Start_value = Start_spinbox.get()
+    print(End_value)
     if(Start_value>=End_value):
         start_plus_one = int(float(Start_value)+1)
         End_value =  str(start_plus_one) #f"{start_plus_one:.3f}"
