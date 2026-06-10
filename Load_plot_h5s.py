@@ -10,9 +10,11 @@ Created on Mon Apr 14 17:03:03 2025
 User Inputs
 """
 #Choosing the desired file
-folder_path = 'C:/Users/DanielJackson/Documents/Service/BA003_HQ/25.02.19_PI_Nanostage_Tests/Stuck_bead/'
+#folder_path = 'C:/Users/DanielJackson/Documents/Service/BA003_HQ/25.02.19_PI_Nanostage_Tests/Stuck_bead/'
+folder_path = ''#'E:/Service_Jobs/B36_Rockefeller_2/20260211_brightfield_obstruction/Pivoting/'
 #'C:/Users/DanielJackson/Downloads/'
-file_name = 'Stuck_bead_2nd_min_378fps.h5'
+#file_name = 'Stuck_bead_2nd_min_378fps.h5'
+file_name = ''#'T1_pivot.h5'
 #'Marker_during_phone_recording.h5'
 
 #Choosing the desired channel and setting the time range to be plotted
@@ -77,6 +79,9 @@ Load the file
 
 file_ID = file_name.split('.')[0]
 file = lk.File(folder_path + file_name)
+global filepath
+file = lk.File(filepath)
+file_ID = filepath.split('.')[0]
 #print(file)
 
 """
@@ -147,8 +152,8 @@ for s in Slices:
     data_plt = data[start_plt:end_plt]
     time_plt = time_s[start_plt:end_plt]
     
-    ps_data = PowerSpectrum(data_plt, Sample_rate)
-    ps_data = ps_data.downsampled_by(downsampling_number)
+    #ps_data = PowerSpectrum(data_plt, Sample_rate)
+    #ps_data = ps_data.downsampled_by(downsampling_number)
 
     """
     Exporting parameters
@@ -216,7 +221,7 @@ for s in Slices:
     #Fit the Histrogram
     def gauss(x, H, A, x0, sigma):
         import numpy as np
-        return H + A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+        return H + A * np.exp(-(x - x0) ** 2 / ((2 * sigma) ** 2))
     
     bin_centers=[]
     i=0
@@ -281,7 +286,7 @@ for s in Slices:
         framed_data.to_csv(Save_as + '.' + export_type)
     
 
-    
+    '''
     """
     Calculating the FFT and fit
     """
@@ -329,7 +334,7 @@ for s in Slices:
                     FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
                 else:
                     framed_data.to_csv(Save_as + ' FFT.' + export_type)
-
+'''
 print('Analysis completed')
 #sys.exit('Analysis completed')
 
