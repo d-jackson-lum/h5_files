@@ -296,7 +296,6 @@ for s in Slices:
         plt.yscale('log')
         #plt.legend()
         plt.title('FFT of ' + plot_title)
-        plt.show()
         
         if do_save:
             plt.savefig(Save_as + ' FFT plot.png')
@@ -312,7 +311,9 @@ for s in Slices:
                 FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
             else:
                 framed_data.to_csv(Save_as + ' FFT.' + export_type)
-
+        
+        plt.show()
+        
 print('Analysis completed')
 #sys.exit('Analysis completed')
 
