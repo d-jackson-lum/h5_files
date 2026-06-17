@@ -15,7 +15,7 @@ from h5_functions import Get_All_Slices, Get_Slices
 # file explorer window
 def browseFiles():
     global filepath
-    filepath = filedialog.askopenfilename(initialdir = "C:/Users/DanielJackson/Desktop/",
+    filepath = filedialog.askopenfilename(initialdir = "C:/Users/DanielJackson/Downloads/",
 										title = "Select a File",
 										filetypes = (("h5 files", "*.h5*"), ("all files", "*.*")))
     # Change label contents
@@ -55,6 +55,7 @@ def pick_slice(Data_Channel):
 	
 def plotting_script():
     #show_message()
+    Set_end_time()
     file_path = 'C:/Users/DanielJackson/Documents/GitHub/h5_files/Load_plot_h5s.py'
     check_check()
     with open(file_path, 'r') as file:
@@ -92,7 +93,7 @@ def Set_start_time():
     global End_value
     Start_value = Start_spinbox.get()
     End_value = End_spinbox.get()
-    print("Starting second for plot:", Start_value)
+    print("Starting time for plot: " + str(Start_value) + " ms")
     if(Start_value>=End_value):
         start_plus_one = int(float(Start_value)+1)
         End_value =  str(start_plus_one)
@@ -103,12 +104,11 @@ def Set_end_time():
     global Start_value
     End_value = End_spinbox.get()
     Start_value = Start_spinbox.get()
-    print(End_value)
     if(Start_value>=End_value):
         start_plus_one = int(float(Start_value)+1)
         End_value =  str(start_plus_one) #f"{start_plus_one:.3f}"
         #Set_end_time()
-    print("Ending second for plot:", End_value)
+    print("Ending time for plot: " + str(End_value) + " ms")
 																							
 # Create the root window
 window = Tk()
@@ -151,14 +151,16 @@ fit_var = BooleanVar()
 check_fft = ttk.Checkbutton(window, text='Plot FFT?', command=check_fft, variable=fft_var)
 check_fit = ttk.Checkbutton(window, text='Fit FFT?', command=check_fit, variable=fit_var)
 
+label_Start = Label(window, text="Start time (ms)")
 Start_var = StringVar(window)
 Start_var.set("0")
-Start_spinbox = ttk.Spinbox(window, from_=0, to=100, width=10, font=("Arial", 12), textvariable=Start_var, command=Set_start_time)
+Start_spinbox = ttk.Spinbox(window, from_=0, to=100000, width=10, font=("Arial", 12), textvariable=Start_var, command=Set_start_time)
 Start_spinbox.config(state="normal", cursor="hand2", justify="center", wrap=False)
 
+label_End = Label(window, text="End time (ms)")
 End_var = StringVar(window)
 End_var.set("1")
-End_spinbox = ttk.Spinbox(window, from_=0, to=100, width=10, font=("Arial", 12), command=Set_end_time)
+End_spinbox = ttk.Spinbox(window, from_=0, to=100000, width=10, font=("Arial", 12), command=Set_end_time)
 End_spinbox.config(state="normal", cursor="hand2", justify="center", wrap=False, textvariable=End_var)
 
 Set_start_time()
@@ -175,8 +177,10 @@ sliced.grid(column = middle_col,row = 5)
 button_plotter.grid(column = middle_col,row = 6)
 check_fft.grid(column = middle_col+1,row = 5)
 check_fit.grid(column = middle_col+1,row = 6)
-Start_spinbox.grid(column = middle_col-1,row = 5)
-End_spinbox.grid(column = middle_col-1,row = 6)
+label_Start.grid(column = middle_col-2, row = 4)
+Start_spinbox.grid(column = middle_col-1,row = 4)
+label_End.grid(column = middle_col-2, row = 5)
+End_spinbox.grid(column = middle_col-1,row = 5)
 
 # Let the window wait for any events
 window.mainloop()

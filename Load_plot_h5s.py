@@ -77,8 +77,9 @@ plt.rcParams['figure.dpi'] = resolution_dpi
 Load the file
 """
 
-file_ID = file_name.split('.')[0]
-file = lk.File(folder_path + file_name)
+#file_ID = file_name.split('.')[0]
+#print(folder_path + file_name)
+#file = lk.File(folder_path + file_name)
 global filepath
 file = lk.File(filepath)
 file_ID = filepath.split('.')[0]
@@ -135,8 +136,8 @@ for s in Slices:
     Plotting region
     """
     #start and end points of the data being analyzed
-    start_pnt = start_time * Sample_rate
-    end_pnt = end_time * Sample_rate
+    start_pnt = (start_time * Sample_rate)/1000
+    end_pnt = end_time * Sample_rate/1000
     
     #some fail safes to prevent errors
     if start_pnt < 0:
@@ -152,7 +153,7 @@ for s in Slices:
     data_plt = data[start_plt:end_plt]
     time_plt = time_s[start_plt:end_plt]
     
-    #ps_data = PowerSpectrum(data_plt, Sample_rate)
+    ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
     #ps_data = ps_data.downsampled_by(downsampling_number)
 
     """
@@ -200,7 +201,7 @@ for s in Slices:
     end_bin = max(Y_plt)
     histing_offset_percent = 0.3
     histing_bins = int(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
-    print(histing_bins)
+    #print(histing_bins)
     
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
@@ -286,7 +287,7 @@ for s in Slices:
         framed_data.to_csv(Save_as + '.' + export_type)
     
 
-    '''
+
     """
     Calculating the FFT and fit
     """
@@ -312,14 +313,16 @@ for s in Slices:
             plt.figure(num=2)#(figsize=(8, 6))
             #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
             plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
-            if Fit_FFT: plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
+            if Fit_FFT:
+                plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
             plt.xlabel('Frequencies')
             plt.ylabel('Amplitudes (V**2/Hz)')
             plt.xscale('log')
             plt.yscale('log')
-            plt.legend()
-            if do_export: plt.savefig(Save_as + ' FFT plot.png')
-            plt.title('Lorentzian Fit to ' + plot_title)
+            #plt.legend()
+            if do_export:
+                plt.savefig(Save_as + ' FFT plot.png')
+            plt.title('FFT of ' + plot_title)
             plt.show()
             
             if do_export:
@@ -334,7 +337,7 @@ for s in Slices:
                     FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
                 else:
                     framed_data.to_csv(Save_as + ' FFT.' + export_type)
-'''
+
 print('Analysis completed')
 #sys.exit('Analysis completed')
 
