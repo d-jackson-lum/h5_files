@@ -44,17 +44,14 @@ def pick_channel(event):
     Slices, Channels, checker = Get_Slices(file, Data_Channel)
     Slices.append('All Slices')
     sliced['values'] = Slices
-    #print(Slices)
 
 def pick_slice(Data_Channel):
     global Slice
     Slice = sliced.get()
     print(f"Selected slice: {Slice}")
     check_check()
-    #print(Slice)
 	
 def plotting_script():
-    #show_message()
     Set_end_time()
     file_path = 'C:/Users/DanielJackson/Documents/GitHub/h5_files/Load_plot_h5s.py'
     check_check()
@@ -66,9 +63,9 @@ def check_fft():
     global check_fft_val
     global check_fit_val
     if fft_var.get():
-        print('Will do!')
+        print('Will plot FFT!')
     else:
-        print('Will not do.')
+        print('Will not plot FFT.')
     check_fft_val = fft_var.get()
     check_fit_val = fit_var.get()
         
@@ -76,17 +73,41 @@ def check_fit():
     global check_fft_val
     global check_fit_val
     if fit_var.get():
-        print('Will do!')
+        print('Will fit FFT!')
     else:
-        print('Will not do.')
+        print('Will not fit FFT.')
     check_fit_val = fit_var.get()
     check_fft_val = fft_var.get()
+    
+def check_exp():
+    global check_exp_dat
+    global check_sav_plt
+    if exp_dat.get():
+        print('Will export data!')
+    else:
+        print('Will not export data.')
+    check_exp_dat = exp_dat.get()
+    check_sav_plt = sav_plt.get()
+    
+def check_sav():
+    global check_exp_dat
+    global check_sav_plt
+    if sav_plt.get():
+        print('Will save plot!')
+    else:
+        print('Will not save plot.')
+    check_exp_dat = exp_dat.get()
+    check_sav_plt = sav_plt.get()
 
 def check_check():
     global check_fft_val
     global check_fit_val
+    global check_exp_dat
+    global check_sav_plt
     check_fft_val = fft_var.get()
     check_fit_val = fit_var.get()
+    check_exp_dat = exp_dat.get()
+    check_sav_plt = sav_plt.get()
     
 def Set_start_time():
     global Start_value
@@ -106,8 +127,7 @@ def Set_end_time():
     Start_value = Start_spinbox.get()
     if(Start_value>=End_value):
         start_plus_one = int(float(Start_value)+1)
-        End_value =  str(start_plus_one) #f"{start_plus_one:.3f}"
-        #Set_end_time()
+        End_value =  str(start_plus_one)
     print("Ending time for plot: " + str(End_value) + " ms")
 																							
 # Create the root window
@@ -132,7 +152,6 @@ window.columnconfigure(1, weight=col_weight)
 window.columnconfigure(2, weight=col_weight)
 window.columnconfigure(3, weight=col_weight)
 window.columnconfigure(4, weight=col_weight)
-#window.columnconfigure(5, weight=col_weight)
 
 # Create a File Explorer label
 label_file_explorer = Label(window,text = "Load and Plot h5 Files", height = 4, fg = "blue")#, width = 100)
@@ -166,10 +185,15 @@ End_spinbox.config(state="normal", cursor="hand2", justify="center", wrap=False,
 Set_start_time()
 Set_end_time()
 
+exp_dat = BooleanVar()
+sav_plt = BooleanVar()
+check_export = ttk.Checkbutton(window, text='Export Data?', command=check_exp, variable=exp_dat)
+check_save = ttk.Checkbutton(window, text='Save Plot?', command=check_sav, variable=sav_plt)
+
+
 label_file_explorer.grid(column = 0, row = 0, columnspan=5, sticky=EW)
 middle_col = 2
 button_explore.grid(column = middle_col, row = 1)
-#button_loader.grid(column = 1,row = 2)
 label_channel.grid(column = middle_col, row = 2)
 channeled.grid(column = middle_col,row = 3)
 label_slice.grid(column = middle_col, row = 4)
@@ -181,6 +205,8 @@ label_Start.grid(column = middle_col-2, row = 4)
 Start_spinbox.grid(column = middle_col-1,row = 4)
 label_End.grid(column = middle_col-2, row = 5)
 End_spinbox.grid(column = middle_col-1,row = 5)
+check_export.grid(column = middle_col+1,row = 1)
+check_save.grid(column = middle_col+1,row = 2)
 
 # Let the window wait for any events
 window.mainloop()

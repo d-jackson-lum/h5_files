@@ -7,40 +7,21 @@ Created on Mon Apr 14 17:03:03 2025
 
 
 """
-User Inputs
+Globals
 """
-#Choosing the desired file
-#folder_path = 'C:/Users/DanielJackson/Documents/Service/BA003_HQ/25.02.19_PI_Nanostage_Tests/Stuck_bead/'
-folder_path = ''#'E:/Service_Jobs/B36_Rockefeller_2/20260211_brightfield_obstruction/Pivoting/'
-#'C:/Users/DanielJackson/Downloads/'
-#file_name = 'Stuck_bead_2nd_min_378fps.h5'
-file_name = ''#'T1_pivot.h5'
-#'Marker_during_phone_recording.h5'
 
-#Choosing the desired channel and setting the time range to be plotted
-#Data_Channel = 'Force HF' #Will proccess all data associated with this channel #e.g. Force 1x, Force 2x, etc.
 global Start_value
 global End_value
-start_time = int(Start_value)
-end_time = int(End_value)
 
-#Choose whether to calculate and plot the FFT
-Do_FFT = 1 # "1" to calculate the FFT. "0" does not calculate it.
-#If Do_FFT is "0" then plotting and fitting will not happen
+
+global filepath
+global Data_Channel
+global Slice
+
 global check_fft_val
 global check_fit_val
-Plot_FFT = check_fft_val # "1" to also plot the FFT of the data. "0" to only plot data
-Fit_FFT = check_fit_val # "1" to include a fit to the FFT. "0" to not include 
-downsampling_number = 1
-
-#Choose to export data. Raw data as csv or txt file, and the png of plot
-export = 'no' #options are 'yes' or 'no'
-export_type = 'txt'  #Options are 'txt' or 'csv' #Defualts to 'txt' for incorrect values
-Destination_folder = 'C:/Users/DanielJackson/Documents/h5_saving/'
-
-"""
-End of User Inputs
-"""
+global check_exp_dat
+global check_sav_plt
 
 
 """
@@ -57,19 +38,12 @@ import sys
 from scipy.optimize import curve_fit
 import numpy as np
 import math
-#matplotlib inline
 width = 8
 height = 4.5
 resolution_dpi = 200
 plt.rcParams['figure.figsize'] = [width, height]
 plt.rcParams['figure.dpi'] = resolution_dpi
-#from scipy.fft import rfft, rfftfreq # fft, fftfreq ## fft and rfft do the same thing, but rfft eliminates symmettry around 0
-#import sys
-#from h5_options import Data_Slice
-#import h5py
 
-#global global_test
-#print(global_test)
 
 
 
@@ -77,13 +51,35 @@ plt.rcParams['figure.dpi'] = resolution_dpi
 Load the file
 """
 
-#file_ID = file_name.split('.')[0]
-#print(folder_path + file_name)
-#file = lk.File(folder_path + file_name)
-global filepath
 file = lk.File(filepath)
 file_ID = filepath.split('.')[0]
-#print(file)
+print(file_ID)
+
+"""
+Exporting parameters
+"""
+
+
+#Choose to export data. Raw data as csv or txt file, and the png of plot
+
+export_type = 'txt'  #Options are 'txt' or 'csv' #Defualts to 'txt' for incorrect values
+
+#Set folder -> control at the top of page
+splitting = filepath.split('/')[:-1]
+Destination_folder = ''
+for folders in splitting:
+    Destination_folder = Destination_folder + folders + '/'
+    
+
+
+do_export = check_exp_dat
+do_save = check_sav_plt
+
+#Set type to txt or csv  
+if export_type != 'txt' and export_type != 'csv':
+    print('Improper export type set. Defaulting to .txt file type.')
+    export_type = 'txt'
+
 
 """
 Choose the data column to load
@@ -95,31 +91,34 @@ print(' ')
 print('------------------------')
 print(' ')
 
-global Data_Channel
-Slices, Channels, checker = Get_Slices(file, Data_Channel)
-#print(Slices)
-#if checker == 0:
-#    sys.exit('No matching channels in this file. Try again using the following data channel options: ' )#+ channels)
 
-global Slice
+Slices, Channels, checker = Get_Slices(file, Data_Channel)
+start_time = int(Start_value)
+end_time = int(End_value)
+
 if Slice == 'All Slices':
     print('Will analyze...')
     print(Slices)
+    if do_save:
+        print('There is currently a bug when plotting and saviong All Slices.')
+        print('To get circumvent it, individual plots will not be displayed.')
+        print('They will automatically close as they are saved.')
+        print('Turn off saving, or plot slices individually, to see the plots presented here')
 else:
     Slices = [Slice]
     print('Will analyze ' + Slice)
 
+num_slice = 0
+
 for s in Slices:
     
     Data_slice = s
-    #print(file)
     
     data = file[Data_Channel][Data_slice].data
     timestamp = file[Data_Channel][Data_slice].timestamps
     time_ns = (timestamp - timestamp[0])
     time_s = time_ns*1e-9
     Nd = len(data)
-    #print(Nd)
     """
     Check for empty slice -> skip if empty
     """
@@ -127,17 +126,16 @@ for s in Slices:
         continue
     
     """
-    Perform fourier transform on the data
+    Define plotting region and perform fourier transform on the data
     """
-    
+    #This is really just collecting sample rate at this point. Ended up using
+    #pylake builtin function to actually get power spectra
     data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
     
-    """
-    Plotting region
-    """
+
     #start and end points of the data being analyzed
-    start_pnt = (start_time * Sample_rate)/1000
-    end_pnt = end_time * Sample_rate/1000
+    start_pnt = (start_time * Sample_rate)/1000 # treats time input as ms
+    end_pnt = end_time * Sample_rate/1000 # treats time input as ms
     
     #some fail safes to prevent errors
     if start_pnt < 0:
@@ -156,21 +154,13 @@ for s in Slices:
     ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
     #ps_data = ps_data.downsampled_by(downsampling_number)
 
-    """
-    Exporting parameters
-    """
-    #Set folder -> control at the top of page
-    Save_as = Destination_folder + Data_Channel + ' ' + s
-    #Convert yes/no to binary control for exporting
-    if export == 'yes':
-        do_export = 1
-    else:
-        do_export = 0
     
-    #Set type to txt or csv  
-    if export_type != 'txt' and export_type != 'csv':
-        print('Improper export type set. Defaulting to .txt file type.')
-        export_type = 'txt'
+    """
+    Save Name
+    """
+    
+    Save_as = Destination_folder + Data_Channel + ' ' + s
+
 
     """
     Plot the data
@@ -206,13 +196,12 @@ for s in Slices:
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
 
-    fig = plt.figure(num=0)
+    fig = plt.figure(num=num_slice)
     gs = fig.add_gridspec(1, 2, hspace=0, wspace=0.005, width_ratios=[2,1])
     (raw, histo) = gs.subplots(sharey=True)
     fig.suptitle(plot_title)#('Raw data with histogram')
     raw.plot(X_plt, Y_plt, label='Data')
     raw.set(xlabel=Xaxis, ylabel=Yaxis)
-    #histed, binned = np.histogram(Y_plt, bins = histing_bins)
     
     histed, binned, _ = histo.hist(Y_plt, orientation='horizontal', bins = histing_bins, label='Histogram', color='C7')
     histo.set(xlabel='Amplitude')
@@ -236,7 +225,7 @@ for s in Slices:
     guess_A = max(histed)
     Guess_x0 = bin_centers[int(len(bin_centers)/2)]
     Guess_sigma = bin_centers[int(len(bin_centers)/1.5)] - bin_centers[int(len(bin_centers)/2)]
-    #print(guess_H, guess_A, Guess_x0, Guess_sigma)
+
     guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
     params, something = curve_fit(gauss, bin_centers, histed, guess)
     fit_H = params[0]
@@ -245,10 +234,7 @@ for s in Slices:
     fit_sigma = params[3]
     FWHM = 2.35*fit_sigma
     fit_histed = gauss(bin_centers, fit_H, fit_A, fit_x0, fit_sigma)
-    #plt.figure(num=1)
-    #plt.plot(bin_centers, histed, 'o', label='data')#, orientation='horizontal', label='Histogram', color='C7')
-    #plt.plot(bin_centers, fit_histed, '-', label='fit')
-    #plt.show()
+
     histo.plot(fit_histed, bin_centers)#, color='r')
     peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
     FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
@@ -261,82 +247,71 @@ for s in Slices:
     histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
     histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
     histo.axes.set_xbound(lower = 0)
-    #histo.annotate(peak,
-    #        xy=(.95, .12), xycoords='figure fraction', fontsize=10,
-    #        horizontalalignment='right')
-    #histo.annotate(FWHM_,
-    #        xy=(.95, .075), xycoords='figure fraction', fontsize=10,
-    #        horizontalalignment='right')
-    fig.show()
-    
-    #print(histed)
-    #print(binned)
-    #print('Peak position: ' + str(fit_x0))
-    #print(Guess_sigma)
-    #print(fit_sigma)
-    plt.show()
-    
-    
-    
-    if do_export:
+
+    if do_save:
         plt.savefig(Save_as + ' plot.png')
 
     
     if do_export:
         framed_data = Prepare_export(X_plt,Y_plt,Xaxis,Yaxis)
         framed_data.to_csv(Save_as + '.' + export_type)
-    
+
+    fig.show()
+    if do_save and len(Slices)>1:
+        plt.close(fig)
 
 
     """
     Calculating the FFT and fit
     """
+    
+    Plot_FFT = check_fft_val 
+    Fit_FFT = check_fit_val 
+    
     #These are pylake functions. makes data into a power spectrum object that
     #gets passed through the pylake package
-    if Do_FFT:
-        
-        data_freq = ps_data.frequency
-        data_amplitude = ps_data.power
-        if Fit_FFT:    
-            Fit_Results = fit_analytical_lorentzian(ps_data)
-        
-            fc = Fit_Results[0]
-            D = Fit_Results[1]
-            sigma_fc = Fit_Results[2]
-            sigma_D = Fit_Results[3]
-            ps_fit = Fit_Results[4]
+    data_freq = ps_data.frequency
+    data_amplitude = ps_data.power
+    if Fit_FFT:    
+        Fit_Results = fit_analytical_lorentzian(ps_data)
+    
+        fc = Fit_Results[0]
+        D = Fit_Results[1]
+        sigma_fc = Fit_Results[2]
+        sigma_D = Fit_Results[3]
+        ps_fit = Fit_Results[4]
 
+        fit_freq = ps_fit.frequency
+        fit_amplitude = ps_fit.power
+
+    if Plot_FFT:
+        plt.figure(num=2)#(figsize=(8, 6))
+        #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
+        plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
+        if Fit_FFT:
+            plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
+        plt.xlabel('Frequencies')
+        plt.ylabel('Amplitudes (V**2/Hz)')
+        plt.xscale('log')
+        plt.yscale('log')
+        #plt.legend()
+        plt.title('FFT of ' + plot_title)
+        plt.show()
+        
+        if do_save:
+            plt.savefig(Save_as + ' FFT plot.png')
+        if do_export:
+            data_freq = ps_data.frequency
+            data_amplitude = ps_data.power
             fit_freq = ps_fit.frequency
             fit_amplitude = ps_fit.power
-    
-        if Plot_FFT:
-            plt.figure(num=2)#(figsize=(8, 6))
-            #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
-            plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
+            framed_data = Prepare_export(data_freq,data_amplitude,'Frequencies','Amplitudes')
             if Fit_FFT:
-                plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
-            plt.xlabel('Frequencies')
-            plt.ylabel('Amplitudes (V**2/Hz)')
-            plt.xscale('log')
-            plt.yscale('log')
-            #plt.legend()
-            if do_export:
-                plt.savefig(Save_as + ' FFT plot.png')
-            plt.title('FFT of ' + plot_title)
-            plt.show()
-            
-            if do_export:
-                data_freq = ps_data.frequency
-                data_amplitude = ps_data.power
-                fit_freq = ps_fit.frequency
-                fit_amplitude = ps_fit.power
-                framed_data = Prepare_export(data_freq,data_amplitude,'Frequencies','Amplitudes')
-                if Fit_FFT:
-                    framed_fit = Prepare_export(fit_freq,fit_amplitude,'Fit Frequencies','Fit Amplitudes')
-                    FFT_with_fit = pd.concat([framed_data,framed_fit])
-                    FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
-                else:
-                    framed_data.to_csv(Save_as + ' FFT.' + export_type)
+                framed_fit = Prepare_export(fit_freq,fit_amplitude,'Fit Frequencies','Fit Amplitudes')
+                FFT_with_fit = pd.concat([framed_data,framed_fit])
+                FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
+            else:
+                framed_data.to_csv(Save_as + ' FFT.' + export_type)
 
 print('Analysis completed')
 #sys.exit('Analysis completed')
