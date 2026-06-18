@@ -283,6 +283,9 @@ for s in Slices:
 
         fit_freq = ps_fit.frequency
         fit_amplitude = ps_fit.power
+        
+        A = fit_amplitude[0]
+        
 
     if Plot_FFT:
         plt.figure(num=2)#(figsize=(8, 6))
@@ -290,16 +293,21 @@ for s in Slices:
         plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
         if Fit_FFT:
             plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
-            Corner = 'fc: ' + str('%s' % float('%.3g' % fc))
-            Diffusion = 'D: ' + str('%s' % float('%.3g' % D))
+            Corner = 'fc: ' + str('%s' % float('%.5g' % fc))
+            Diffusion = 'D: ' + str('%s' % float('%.5g' % D))
+            Amplitude = 'A: ' + str('%s' % float('%.5g' % A))
             fft_w_frac = 0.15
             fft_h_frac = 0.25
             fft_w_frac2 = 0.15
-            fft_h_frac2 = 0.15
+            fft_h_frac2 = 0.20
+            fft_w_frac3 = 0.15
+            fft_h_frac3 = 0.15
             print(Corner)
             print(Diffusion)
+            print(Amplitude)
             plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
             plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
+            plt.annotate(Amplitude, xy=(width_pixels*fft_w_frac3, height_pixels*fft_h_frac3), xycoords='figure pixels')
         plt.xlabel('Frequencies')
         plt.ylabel('Amplitudes (V**2/Hz)')
         plt.xscale('log')
