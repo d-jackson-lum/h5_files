@@ -15,7 +15,7 @@ from h5_functions import Get_All_Slices, Get_Slices
 # file explorer window
 def browseFiles():
     global filepath
-    filepath = filedialog.askopenfilename(initialdir = "C:/Users/DanielJackson/Downloads/",
+    filepath = filedialog.askopenfilename(initialdir = "C:/",
 										title = "Select a File",
 										filetypes = (("h5 files", "*.h5*"), ("all files", "*.*")))
     # Change label contents
