@@ -296,6 +296,9 @@ for s in Slices:
             Corner = 'fc: ' + str('%s' % float('%.5g' % fc))
             Diffusion = 'D: ' + str('%s' % float('%.5g' % D))
             Amplitude = 'A: ' + str('%s' % float('%.5g' % A))
+            Sigma_Corner = 'Sigma fc: ' + str('%s' % float('%.5g' % sigma_fc))
+            Sigma_Diff = 'Sigma D: ' + str('%s' % float('%.5g' % sigma_D))
+            
             fft_w_frac = 0.15
             fft_h_frac = 0.25
             fft_w_frac2 = 0.15
