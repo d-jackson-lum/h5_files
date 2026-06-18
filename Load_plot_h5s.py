@@ -290,11 +290,20 @@ for s in Slices:
         plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
         if Fit_FFT:
             plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
+            Corner = 'fc: ' + str('%s' % float('%.3g' % fc))
+            Diffusion = 'D: ' + str('%s' % float('%.3g' % D))
+            fft_w_frac = 0.15
+            fft_h_frac = 0.25
+            fft_w_frac2 = 0.15
+            fft_h_frac2 = 0.15
+            print(Corner)
+            print(Diffusion)
+            plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
+            plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
         plt.xlabel('Frequencies')
         plt.ylabel('Amplitudes (V**2/Hz)')
         plt.xscale('log')
         plt.yscale('log')
-        #plt.legend()
         plt.title('FFT of ' + plot_title)
         
         if do_save:
