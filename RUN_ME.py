@@ -217,10 +217,11 @@ check_fit.grid(column = middle_col+1,row = 6)
 label_Start.grid(column = middle_col-2, row = 4)
 Start_spinbox.grid(column = middle_col-1,row = 4)
 label_End.grid(column = middle_col-2, row = 5)
+check_fit_hist.grid(column = middle_col-1,row = 6)
 End_spinbox.grid(column = middle_col-1,row = 5)
 check_export.grid(column = middle_col+1,row = 1)
 check_save.grid(column = middle_col+1,row = 2)
-check_fit_hist.grid(column = middle_col+1,row = 3)
+
 
 # Let the window wait for any events
 window.mainloop()
