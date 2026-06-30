@@ -54,7 +54,7 @@ Load the file
 
 file = lk.File(filepath)
 file_ID = filepath.split('.')[0]
-print(file_ID)
+#print(file_ID)
 
 """
 Exporting parameters

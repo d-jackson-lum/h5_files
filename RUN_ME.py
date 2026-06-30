@@ -17,7 +17,7 @@ def browseFiles():
     global filepath
     filepath = filedialog.askopenfilename(initialdir = "",
 										title = "Select a File",
-										filetypes = (("h5 files", "*.h5*"), ("all files", "*.*")))
+										filetypes = (("all files", "*.*"), ("h5 files", "*.h5")))
     # Change label contents
     label_file_explorer.configure(text="Loaded: " + filepath)
     get_file()
