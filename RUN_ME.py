@@ -101,7 +101,7 @@ def check_sav():
     
 def check_hist():
     global check_fit_hist
-    if sav_plt.get():
+    if fit_hist.get():
         print('Will fit histogram!')
         print('Warnging: Only performs gaussian fitting right now')
     else:
