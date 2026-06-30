@@ -98,16 +98,27 @@ def check_sav():
         print('Will not save plot.')
     check_exp_dat = exp_dat.get()
     check_sav_plt = sav_plt.get()
+    
+def check_hist():
+    global check_fit_hist
+    if sav_plt.get():
+        print('Will fit histogram!')
+        print('Warnging: Only performs gaussian fitting right now')
+    else:
+        print('Will not fit histogram.')
+    check_fit_hist = fit_hist.get()
 
 def check_check():
     global check_fft_val
     global check_fit_val
     global check_exp_dat
     global check_sav_plt
+    global check_fit_hist
     check_fft_val = fft_var.get()
     check_fit_val = fit_var.get()
     check_exp_dat = exp_dat.get()
     check_sav_plt = sav_plt.get()
+    check_fit_hist = fit_hist.get()
     
 def Set_start_time():
     global Start_value
@@ -187,8 +198,10 @@ Set_end_time()
 
 exp_dat = BooleanVar()
 sav_plt = BooleanVar()
+fit_hist = BooleanVar()
 check_export = ttk.Checkbutton(window, text='Export Data?', command=check_exp, variable=exp_dat)
 check_save = ttk.Checkbutton(window, text='Save Plot?', command=check_sav, variable=sav_plt)
+check_fit_hist = ttk.Checkbutton(window, text='Fit Histogram?', command=check_hist, variable=fit_hist)
 
 
 label_file_explorer.grid(column = 0, row = 0, columnspan=5, sticky=EW)
@@ -207,6 +220,7 @@ label_End.grid(column = middle_col-2, row = 5)
 End_spinbox.grid(column = middle_col-1,row = 5)
 check_export.grid(column = middle_col+1,row = 1)
 check_save.grid(column = middle_col+1,row = 2)
+check_fit_hist.grid(column = middle_col+1,row = 3)
 
 # Let the window wait for any events
 window.mainloop()

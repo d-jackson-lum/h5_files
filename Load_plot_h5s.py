@@ -22,6 +22,7 @@ global check_fft_val
 global check_fit_val
 global check_exp_dat
 global check_sav_plt
+global check_fit_hist
 
 
 """
@@ -100,7 +101,7 @@ if Slice == 'All Slices':
     print('Will analyze...')
     print(Slices)
     if do_save:
-        print('There is currently a bug when plotting and saviong All Slices.')
+        print('There is currently a bug when plotting and saving All Slices.')
         print('To get circumvent it, individual plots will not be displayed.')
         print('They will automatically close as they are saved.')
         print('Turn off saving, or plot slices individually, to see the plots presented here')
@@ -221,31 +222,34 @@ for s in Slices:
         bin_center = (bin1 + bin2)/2
         bin_centers.append(bin_center)
         i += 1
-    guess_H = 0
-    guess_A = max(histed)
-    Guess_x0 = bin_centers[int(len(bin_centers)/2)]
-    Guess_sigma = bin_centers[int(len(bin_centers)/1.5)] - bin_centers[int(len(bin_centers)/2)]
-
-    guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
-    params, something = curve_fit(gauss, bin_centers, histed, guess)
-    fit_H = params[0]
-    fit_A = params[1]
-    fit_x0 = params[2]
-    fit_sigma = params[3]
-    FWHM = 2.35*fit_sigma
-    fit_histed = gauss(bin_centers, fit_H, fit_A, fit_x0, fit_sigma)
-
-    histo.plot(fit_histed, bin_centers)#, color='r')
-    peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
-    FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
-    width_pixels = width * resolution_dpi
-    height_pixels = height * resolution_dpi
-    w_frac_1 = 0.67
-    w_frac_2 = 0.67
-    h_frac_1 = 0.12
-    h_frac_2 = 0.075
-    histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
-    histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
+    
+    if check_fit_hist:
+        guess_H = 0
+        guess_A = max(histed)
+        Guess_x0 = bin_centers[int(len(bin_centers)/2)]
+        Guess_sigma = bin_centers[int(len(bin_centers)/1.5)] - bin_centers[int(len(bin_centers)/2)]
+    
+        guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
+        params, something = curve_fit(gauss, bin_centers, histed, guess)
+        fit_H = params[0]
+        fit_A = params[1]
+        fit_x0 = params[2]
+        fit_sigma = params[3]
+        FWHM = 2.35*fit_sigma
+        fit_histed = gauss(bin_centers, fit_H, fit_A, fit_x0, fit_sigma)
+    
+        histo.plot(fit_histed, bin_centers)#, color='r')
+        peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
+        FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
+        width_pixels = width * resolution_dpi
+        height_pixels = height * resolution_dpi
+        w_frac_1 = 0.67
+        w_frac_2 = 0.67
+        h_frac_1 = 0.12
+        h_frac_2 = 0.075
+        histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
+        histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
+        
     histo.axes.set_xbound(lower = 0)
 
     if do_save:
