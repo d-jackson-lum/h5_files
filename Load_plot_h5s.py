@@ -214,6 +214,10 @@ for s in Slices:
         import numpy as np
         return H + A * np.exp(-(x - x0) ** 2 / ((2 * sigma) ** 2))
     
+    def dbl_gauss(x, H, A1, x1_0, sigma1, A2, x2_0, sigma2):
+        import numpy as np
+        return H + A1 * np.exp(-(x - x1_0) ** 2 / ((2 * sigma1) ** 2)) + A2 * np.exp(-(x - x2_0) ** 2 / ((2 * sigma2) ** 2))
+        
     bin_centers=[]
     i=0
     for histt in histed:
@@ -229,27 +233,32 @@ for s in Slices:
         Guess_x0 = bin_centers[int(len(bin_centers)/2)]
         Guess_sigma = bin_centers[int(len(bin_centers)/1.5)] - bin_centers[int(len(bin_centers)/2)]
     
-        guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
-        params, something = curve_fit(gauss, bin_centers, histed, guess)
-        fit_H = params[0]
-        fit_A = params[1]
-        fit_x0 = params[2]
-        fit_sigma = params[3]
-        FWHM = 2.35*fit_sigma
-        fit_histed = gauss(bin_centers, fit_H, fit_A, fit_x0, fit_sigma)
-    
-        histo.plot(fit_histed, bin_centers)#, color='r')
-        peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
-        FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
-        width_pixels = width * resolution_dpi
-        height_pixels = height * resolution_dpi
-        w_frac_1 = 0.67
-        w_frac_2 = 0.67
-        h_frac_1 = 0.12
-        h_frac_2 = 0.075
-        histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
-        histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
         
+        try:
+            guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
+            params, something = curve_fit(gauss, bin_centers, histed, guess)
+            #dbl_guess = [guess_H, guess_A, Guess_x0, Guess_sigma, guess_A*2, Guess_x0*2, Guess_sigma*2]
+            #params, something = curve_fit(dbl_gauss, bin_centers, histed, dbl_guess)
+            fit_H = params[0]
+            fit_A = params[1]
+            fit_x0 = params[2]
+            fit_sigma = params[3]
+            FWHM = 2.35*fit_sigma
+            fit_histed = gauss(bin_centers, fit_H, fit_A, fit_x0, fit_sigma)
+            histo.plot(fit_histed, bin_centers)#, color='r')
+            peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
+            FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
+            width_pixels = width * resolution_dpi
+            height_pixels = height * resolution_dpi
+            w_frac_1 = 0.67
+            w_frac_2 = 0.67
+            h_frac_1 = 0.12
+            h_frac_2 = 0.075
+            histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
+            histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
+        except:
+            fit_histed = histed
+            print('Warning: Histogram curve fitting failed.')
     histo.axes.set_xbound(lower = 0)
 
     if do_save:
