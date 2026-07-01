@@ -103,7 +103,6 @@ def check_hist():
     global check_fit_hist
     if fit_hist.get():
         print('Will fit histogram!')
-        print('Warnging: Only performs gaussian fitting right now')
     else:
         print('Will not fit histogram.')
     check_fit_hist = fit_hist.get()
@@ -201,7 +200,7 @@ sav_plt = BooleanVar()
 fit_hist = BooleanVar()
 check_export = ttk.Checkbutton(window, text='Export Data?', command=check_exp, variable=exp_dat)
 check_save = ttk.Checkbutton(window, text='Save Plot?', command=check_sav, variable=sav_plt)
-check_fit_hist = ttk.Checkbutton(window, text='Fit Histogram?', command=check_hist, variable=fit_hist)
+check_fit_hist = ttk.Checkbutton(window, text='Fit Histogram? (gaussian)', command=check_hist, variable=fit_hist)
 
 
 label_file_explorer.grid(column = 0, row = 0, columnspan=5, sticky=EW)
