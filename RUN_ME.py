@@ -8,7 +8,8 @@ Created on Wed Apr 23 14:36:15 2025
 from tkinter import *
 from tkinter import messagebox, simpledialog, ttk, filedialog
 import lumicks.pylake as lk
-from h5_functions import Get_All_Slices, Get_Slices
+from Functions.h5_functions import Get_All_Slices, Get_Slices
+from pathlib import Path
 
 
 # Function for opening the 
@@ -35,6 +36,7 @@ def get_file():
     Slices, Channels, checker = Get_Slices(file, "")
     channeled['values'] = Channels
     print("File loaded succesfully.")
+    print(Slices)
     
 def pick_channel(event):
     global Data_Channel
@@ -45,15 +47,27 @@ def pick_channel(event):
     Slices.append('All Slices')
     sliced['values'] = Slices
 
-def pick_slice(Data_Channel):
+def pick_slice(event):
+    global Data_Channel
     global Slice
+    global file
     Slice = sliced.get()
     print(f"Selected slice: {Slice}")
     check_check()
+    if Slice != 'All Slices':
+        timestamp = file[Data_Channel][Slice].timestamps
+        time_ns = (timestamp - timestamp[0])
+        time_s = time_ns*1e-9
+        var_total_time.set(str(round(max(time_s),2)) + " s")
 	
 def plotting_script():
+    # 1. Get the directory where THIS script is saved
+    base_dir = Path(__file__).resolve().parent
+    
+    # 2. Join the base path with your target file name or folder
+    file_path = base_dir / "Functions" / "Load_plot_h5s.py"
+    
     Set_end_time()
-    file_path = 'C:/Users/DanielJackson/Documents/GitHub/h5_files/Load_plot_h5s.py'
     check_check()
     with open(file_path, 'r') as file:
         code = file.read()
@@ -200,6 +214,11 @@ End_spinbox.config(state="normal", cursor="hand2", justify="center", wrap=False,
 Set_start_time()
 Set_end_time()
 
+label_total_time = Label(window,text = "Total time")
+var_total_time = StringVar(window)
+var_total_time.set("0 s")
+total_time = Label(window, textvariable = var_total_time)
+
 exp_dat = BooleanVar()
 sav_plt = BooleanVar()
 fit_hist = BooleanVar()
@@ -227,8 +246,10 @@ check_fit.grid(column = middle_col+1,row = 5)
 label_Start.grid(column = middle_col-2, row = 4)
 Start_spinbox.grid(column = middle_col-1,row = 4)
 label_End.grid(column = middle_col-2, row = 5)
-check_fit_hist.grid(column = middle_col+1,row = 6)
 End_spinbox.grid(column = middle_col-1,row = 5)
+label_total_time.grid(column = middle_col-2, row = 6)
+total_time.grid(column = middle_col-1, row = 6)
+check_fit_hist.grid(column = middle_col+1,row = 6)
 check_export.grid(column = middle_col+1,row = 1)
 check_save.grid(column = middle_col+1,row = 2)
 radio_ms.grid(column = middle_col-2,row = 1)

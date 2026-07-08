@@ -5,6 +5,11 @@ Created on Mon Apr 14 17:03:03 2025
 @author: DanielJackson
 """
 
+print(' ')
+print('************************************************')
+print(' ')
+
+
 """
 Globals
 """
@@ -32,13 +37,14 @@ Import Modules
 import matplotlib.pyplot as plt
 import scipy as sp
 import lumicks.pylake as lk
-from h5_functions import Get_Slices, Get_FFT, fit_analytical_lorentzian, Prepare_export#, lorentzian
+from Functions.h5_functions import Get_Slices, Get_FFT, fit_analytical_lorentzian, Prepare_export#, lorentzian
 from lumicks.pylake.force_calibration.power_spectrum import PowerSpectrum
 import pandas as pd
 import sys
 from scipy.optimize import curve_fit
 import numpy as np
 import math
+from datetime import datetime
 
 """
 Clean away all old plots
@@ -65,7 +71,15 @@ Load the file
 
 file = lk.File(filepath)
 file_ID = filepath.split('.')[0]
-#print(file_ID)
+
+print('File ID: ' + file_ID)
+print('Bluelake version: ' + file.bluelake_version)
+exp_time = datetime.fromtimestamp(file.export_time // 1000000000)
+print('Exported at: ' + str(exp_time))
+
+print(' ')
+print('------------------------------------------------')
+print(' ')
 
 """
 Exporting parameters
@@ -98,10 +112,6 @@ Choose the data column to load
 Finds all slices present for the chosen data channel
 Will proccess all data associated with this channel #e.g. Force HF: Force 1x, Force 2x, etc.
 """
-
-print(' ')
-print('************************************************')
-print(' ')
 print('Plots will appear after annalysis is completed')
 print(' ')
 print('------------------------------------------------')
@@ -124,7 +134,8 @@ num_fig = 0
 
 for s in Slices:
     
-    print('Analyzing: ' + s)
+    print('Analyzing...')
+    print(Data_Channel + ": " + s)
     print(' ')
     print('------------------------------------------------')
     print(' ')
