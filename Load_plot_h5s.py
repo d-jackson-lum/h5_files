@@ -5,13 +5,13 @@ Created on Mon Apr 14 17:03:03 2025
 @author: DanielJackson
 """
 
-
 """
 Globals
 """
 
 global Start_value
 global End_value
+#global time_type
 
 
 global filepath
@@ -24,11 +24,11 @@ global check_exp_dat
 global check_sav_plt
 global check_fit_hist
 
-
 """
 Import Modules
 """
-
+#import matplotlib
+#matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import scipy as sp
 import lumicks.pylake as lk
@@ -39,14 +39,25 @@ import sys
 from scipy.optimize import curve_fit
 import numpy as np
 import math
+
+"""
+Clean away all old plots
+"""
+
+plt.close('all')
+
+"""
+Define size of new plots
+"""
+
 width = 8
 height = 4.5
 resolution_dpi = 200
 plt.rcParams['figure.figsize'] = [width, height]
 plt.rcParams['figure.dpi'] = resolution_dpi
 
-
-
+width_pixels = width * resolution_dpi
+height_pixels = height * resolution_dpi
 
 """
 Load the file
@@ -89,9 +100,12 @@ Will proccess all data associated with this channel #e.g. Force HF: Force 1x, Fo
 """
 
 print(' ')
-print('------------------------')
+print('************************************************')
 print(' ')
-
+print('Plots will appear after annalysis is completed')
+print(' ')
+print('------------------------------------------------')
+print(' ')
 
 Slices, Channels, checker = Get_Slices(file, Data_Channel)
 start_time = int(Start_value)
@@ -100,18 +114,20 @@ end_time = int(End_value)
 if Slice == 'All Slices':
     print('Will analyze...')
     print(Slices)
-    if do_save:
-        print('There is currently a bug when plotting and saving All Slices.')
-        print('To get circumvent it, individual plots will not be displayed.')
-        print('They will automatically close as they are saved.')
-        print('Turn off saving, or plot slices individually, to see the plots presented here')
+    print(' ')
+    print('------------------------------------------------')
+    print(' ')
 else:
     Slices = [Slice]
-    print('Will analyze ' + Slice)
 
-num_slice = 0
+num_fig = 0
 
 for s in Slices:
+    
+    print('Analyzing: ' + s)
+    print(' ')
+    print('------------------------------------------------')
+    print(' ')
     
     Data_slice = s
     
@@ -132,11 +148,17 @@ for s in Slices:
     #This is really just collecting sample rate at this point. Ended up using
     #pylake builtin function to actually get power spectra
     data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
-    
 
     #start and end points of the data being analyzed
-    start_pnt = (start_time * Sample_rate)/1000 # treats time input as ms
-    end_pnt = end_time * Sample_rate/1000 # treats time input as ms
+    if time_type == 'Milliseconds':
+        start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
+        end_pnt = end_time * Sample_rate / 1000 # treats time input as ms
+    elif time_type == 'Seconds':
+        start_pnt = start_time * Sample_rate # treats time input as s
+        end_pnt = end_time * Sample_rate # treats time input as s
+    elif time_type == 'Minutes':
+        start_pnt = start_time * 60 * Sample_rate * 60 # treats time input as ms
+        end_pnt = end_time * 60 * Sample_rate # treats time input as ms
     
     #some fail safes to prevent errors
     if start_pnt < 0:
@@ -197,7 +219,7 @@ for s in Slices:
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
 
-    fig = plt.figure(num=num_slice)
+    fig = plt.figure(num=num_fig)
     gs = fig.add_gridspec(1, 2, hspace=0, wspace=0.005, width_ratios=[2,1])
     (raw, histo) = gs.subplots(sharey=True)
     fig.suptitle(plot_title)#('Raw data with histogram')
@@ -248,14 +270,19 @@ for s in Slices:
             histo.plot(fit_histed, bin_centers)#, color='r')
             peak = 'Peak: ' + str('%s' % float('%.3g' % fit_x0))
             FWHM_ = 'FWHM: ' + str('%s' % float('%.3g' % FWHM))
-            width_pixels = width * resolution_dpi
-            height_pixels = height * resolution_dpi
+            print('Histogram fitting values')
+            print(peak)
+            print(FWHM_)
+            print(' ')
+            print('------------------------------------------------')
+            print(' ')
             w_frac_1 = 0.67
             w_frac_2 = 0.67
             h_frac_1 = 0.12
             h_frac_2 = 0.075
             histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
             histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
+            
         except:
             fit_histed = histed
             print('Warning: Histogram curve fitting failed.')
@@ -269,10 +296,9 @@ for s in Slices:
         framed_data = Prepare_export(X_plt,Y_plt,Xaxis,Yaxis)
         framed_data.to_csv(Save_as + '.' + export_type)
 
-    fig.show()
-    if do_save and len(Slices)>1:
-        plt.close(fig)
-
+    
+    
+    num_fig += 1
 
     """
     Calculating the FFT and fit
@@ -301,7 +327,7 @@ for s in Slices:
         
 
     if Plot_FFT:
-        plt.figure(num=2)#(figsize=(8, 6))
+        plt.figure(num=num_fig)#(figsize=(8, 6))
         #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
         plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
         if Fit_FFT:
@@ -311,19 +337,24 @@ for s in Slices:
             Amplitude = 'A: ' + str('%s' % float('%.5g' % A))
             Sigma_Corner = 'Sigma fc: ' + str('%s' % float('%.5g' % sigma_fc))
             Sigma_Diff = 'Sigma D: ' + str('%s' % float('%.5g' % sigma_D))
-            
             fft_w_frac = 0.15
             fft_h_frac = 0.25
             fft_w_frac2 = 0.15
             fft_h_frac2 = 0.20
             fft_w_frac3 = 0.15
             fft_h_frac3 = 0.15
-            print(Corner)
-            print(Diffusion)
-            print(Amplitude)
             plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
             plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
             plt.annotate(Amplitude, xy=(width_pixels*fft_w_frac3, height_pixels*fft_h_frac3), xycoords='figure pixels')
+            
+            print('Power spectrum fitting values')
+            print(Corner)
+            print(Diffusion)
+            print(Amplitude)
+            print(' ')
+            print('------------------------------------------------')
+            print(' ')
+            
         plt.xlabel('Frequencies')
         plt.ylabel('Amplitudes (V**2/Hz)')
         plt.xscale('log')
@@ -344,11 +375,12 @@ for s in Slices:
                 FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
             else:
                 framed_data.to_csv(Save_as + ' FFT.' + export_type)
-        
-        plt.show()
-        
+                
+        num_fig += 1
 print('Analysis completed')
-#sys.exit('Analysis completed')
+fig.show()  
+plt.show()   
+
 
 
 

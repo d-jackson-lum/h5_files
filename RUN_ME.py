@@ -138,7 +138,12 @@ def Set_end_time():
     if(Start_value>=End_value):
         start_plus_one = int(float(Start_value)+1)
         End_value =  str(start_plus_one)
-    print("Ending time for plot: " + str(End_value) + " ms")
+    #print("Ending time for plot: " + str(End_value) + " ms")
+    
+def set_time_type():
+    global time_type
+    time_type = selected.get()
+    print(f"Time type changed to {time_type}")
 																							
 # Create the root window
 window = Tk()
@@ -180,13 +185,13 @@ fit_var = BooleanVar()
 check_fft = ttk.Checkbutton(window, text='Plot FFT?', command=check_fft, variable=fft_var)
 check_fit = ttk.Checkbutton(window, text='Fit FFT?', command=check_fit, variable=fit_var)
 
-label_Start = Label(window, text="Start time (ms)")
+label_Start = Label(window, text="Start time")
 Start_var = StringVar(window)
 Start_var.set("0")
 Start_spinbox = ttk.Spinbox(window, from_=0, to=100000, width=10, font=("Arial", 12), textvariable=Start_var, command=Set_start_time)
 Start_spinbox.config(state="normal", cursor="hand2", justify="center", wrap=False)
 
-label_End = Label(window, text="End time (ms)")
+label_End = Label(window, text="End time")
 End_var = StringVar(window)
 End_var.set("1")
 End_spinbox = ttk.Spinbox(window, from_=0, to=100000, width=10, font=("Arial", 12), command=Set_end_time)
@@ -202,6 +207,12 @@ check_export = ttk.Checkbutton(window, text='Export Data?', command=check_exp, v
 check_save = ttk.Checkbutton(window, text='Save Plot?', command=check_sav, variable=sav_plt)
 check_fit_hist = ttk.Checkbutton(window, text='Fit Histogram? (gaussian)', command=check_hist, variable=fit_hist)
 
+selected = StringVar()
+radio_ms = ttk.Radiobutton(window, text='Millieconds', variable=selected, value='Millieconds', command=set_time_type)
+radio_s = ttk.Radiobutton(window, text='Seconds', variable=selected, value='Seconds', command=set_time_type)
+radio_min = ttk.Radiobutton(window, text='Minutes', variable=selected, value='Minutes', command=set_time_type)
+radio_ms.invoke()
+
 
 label_file_explorer.grid(column = 0, row = 0, columnspan=5, sticky=EW)
 middle_col = 2
@@ -211,16 +222,18 @@ channeled.grid(column = middle_col,row = 3)
 label_slice.grid(column = middle_col, row = 4)
 sliced.grid(column = middle_col,row = 5)
 button_plotter.grid(column = middle_col,row = 6)
-check_fft.grid(column = middle_col+1,row = 5)
-check_fit.grid(column = middle_col+1,row = 6)
+check_fft.grid(column = middle_col+1,row = 4)
+check_fit.grid(column = middle_col+1,row = 5)
 label_Start.grid(column = middle_col-2, row = 4)
 Start_spinbox.grid(column = middle_col-1,row = 4)
 label_End.grid(column = middle_col-2, row = 5)
-check_fit_hist.grid(column = middle_col-1,row = 6)
+check_fit_hist.grid(column = middle_col+1,row = 6)
 End_spinbox.grid(column = middle_col-1,row = 5)
 check_export.grid(column = middle_col+1,row = 1)
 check_save.grid(column = middle_col+1,row = 2)
-
+radio_ms.grid(column = middle_col-2,row = 1)
+radio_s.grid(column = middle_col-2,row = 2)
+radio_min.grid(column = middle_col-2,row = 3)
 
 # Let the window wait for any events
 window.mainloop()
