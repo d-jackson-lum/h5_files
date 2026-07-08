@@ -4,14 +4,15 @@ Created on Wed Apr 23 14:36:15 2025
 
 @author: DanielJackson
 """
-
+#%% Imports
+import lumicks.pylake as lk
+import matplotlib.pyplot as plt
 from tkinter import *
 from tkinter import messagebox, simpledialog, ttk, filedialog
-import lumicks.pylake as lk
 from Functions.h5_functions import Get_All_Slices, Get_Slices
 from pathlib import Path
 
-
+#%% Functions
 # Function for opening the 
 # file explorer window
 def browseFiles():
@@ -158,8 +159,11 @@ def set_time_type():
     global time_type
     time_type = selected.get()
     print(f"Time type changed to {time_type}")
+
+def close_all_fig():
+    plt.close('all')
 																							
-# Create the root window
+#%% Create the root window
 window = Tk()
 window.title('File Explorer')
 window.geometry("750x500")
@@ -186,6 +190,7 @@ window.columnconfigure(4, weight=col_weight)
 label_file_explorer = Label(window,text = "Load and Plot h5 Files", height = 4, fg = "blue")#, width = 100)
 button_explore = Button(window, text = "Browse Files",command = browseFiles) 
 button_plotter = Button(window, text="Plot Data", command=plotting_script)
+button_close_all = Button(window, text="Close All Figures", command=close_all_fig)
 
 label_channel = Label(window, text="Select data channel")
 channeled = ttk.Combobox(window)
@@ -241,15 +246,16 @@ channeled.grid(column = middle_col,row = 3)
 label_slice.grid(column = middle_col, row = 4)
 sliced.grid(column = middle_col,row = 5)
 button_plotter.grid(column = middle_col,row = 6)
-check_fft.grid(column = middle_col+1,row = 4)
-check_fit.grid(column = middle_col+1,row = 5)
+button_close_all.grid(column = middle_col+1,row = 6)
+check_fft.grid(column = middle_col+1,row = 3)
+check_fit.grid(column = middle_col+1,row = 4)
 label_Start.grid(column = middle_col-2, row = 4)
 Start_spinbox.grid(column = middle_col-1,row = 4)
 label_End.grid(column = middle_col-2, row = 5)
 End_spinbox.grid(column = middle_col-1,row = 5)
 label_total_time.grid(column = middle_col-2, row = 6)
 total_time.grid(column = middle_col-1, row = 6)
-check_fit_hist.grid(column = middle_col+1,row = 6)
+check_fit_hist.grid(column = middle_col+1,row = 5)
 check_export.grid(column = middle_col+1,row = 1)
 check_save.grid(column = middle_col+1,row = 2)
 radio_ms.grid(column = middle_col-2,row = 1)
