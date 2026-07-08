@@ -11,7 +11,7 @@ Globals
 
 global Start_value
 global End_value
-#global time_type
+global time_type
 
 
 global filepath
