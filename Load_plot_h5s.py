@@ -326,7 +326,7 @@ for s in Slices:
         A = fit_amplitude[0]
         
 
-    if Plot_FFT:
+    if Plot_FFT or Fit_FFT:
         plt.figure(num=num_fig)#(figsize=(8, 6))
         #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
         plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
