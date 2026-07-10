@@ -49,9 +49,8 @@ from datetime import datetime
 """
 Clean away all old plots
 """
-
-plt.close('all')
-
+# I will consider bringing this back. It was actually anoying have plots disappear whithout my say so
+#plt.close('all')
 """
 Define size of new plots
 """
@@ -130,7 +129,7 @@ if Slice == 'All Slices':
 else:
     Slices = [Slice]
 
-num_fig = 0
+num_fig = plt.gcf().number + 1
 
 for s in Slices:
     
@@ -147,6 +146,8 @@ for s in Slices:
     time_ns = (timestamp - timestamp[0])
     time_s = time_ns*1e-9
     Nd = len(data)
+    print(Nd)
+    print(time_s)
     """
     Check for empty slice -> skip if empty
     """
@@ -159,7 +160,7 @@ for s in Slices:
     #This is really just collecting sample rate at this point. Ended up using
     #pylake builtin function to actually get power spectra
     data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
-
+    print(Sample_rate)
     #start and end points of the data being analyzed
     if time_type == 'Milliseconds':
         start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
@@ -178,13 +179,15 @@ for s in Slices:
         end_pnt = Nd - 1
     if start_pnt >= end_pnt:
         start_pnt = end_pnt - 1
-        
+    print(start_pnt, end_pnt)    
     #Creat array of the desired time window    
     start_plt = int(start_pnt)
     end_plt = int(end_pnt)
     data_plt = data[start_plt:end_plt]
     time_plt = time_s[start_plt:end_plt]
-    
+    print(start_plt, end_plt) 
+    print(data_plt, time_plt)
+    print(max(data))
     ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
     #ps_data = ps_data.downsampled_by(downsampling_number)
 
@@ -220,13 +223,23 @@ for s in Slices:
     Y_plt = data_plt
 
     IQR = sp.stats.iqr(Y_plt)
-    bin_width = 2 * IQR / (Nd**(1/3)) ##based on Freedman-Diaconis rule for data spread
     start_bin = min(Y_plt)
     end_bin = max(Y_plt)
     histing_offset_percent = 0.3
-    histing_bins = int(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
-    #print(histing_bins)
     
+    if IQR == 0:
+        bin_width = 0
+        histing_bins = 10  # A safe default for a flat histogram
+        print(f"IQR is 0 (Data has no spread). Using default bins: {histing_bins}")
+    else:
+        bin_width = 2 * IQR / (Nd**(1/3)) ## based on Freedman-Diaconis rule for data spread
+        print(IQR, bin_width, start_bin, end_bin, ((end_bin - start_bin)/bin_width))
+        histing_bins = math.ceil(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
+    
+    
+    print(IQR, bin_width, start_bin, end_bin, ((end_bin - start_bin)/bin_width))
+    
+       
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
 
