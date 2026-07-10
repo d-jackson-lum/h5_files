@@ -228,14 +228,15 @@ for s in Slices:
     histing_offset_percent = 0.3
     
     if IQR == 0:
-        bin_width = 0
         histing_bins = 10  # A safe default for a flat histogram
-        print(f"IQR is 0 (Data has no spread). Using default bins: {histing_bins}")
+        bin_width = (end_bin - start_bin)/histing_bins
+        print(f"IQR is 0. Data has no spread. At least 50% of your numbers are exactly identical.")
+        print(f"Using default bins: {histing_bins}")
+        print(f"Using default width: (end_bin - start_bin)/histing_bins = {bin_width}")
     else:
         bin_width = 2 * IQR / (Nd**(1/3)) ## based on Freedman-Diaconis rule for data spread
         histing_bins = math.ceil(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
     
-       
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
 
