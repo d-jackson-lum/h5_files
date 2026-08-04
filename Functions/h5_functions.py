@@ -56,13 +56,13 @@ def Get_All_Slices(file):
     return Data_options_big
 
 def Get_FFT(data, time_0, time_1):
-    
+
     Nd = len(data)
-    Sample_rate = 1/(time_1 - time_0) #Hz
+    Sample_rate = Nd/(time_1 - time_0) #Hz
     FFT_of_data = rfft(data)
     absolute_value_FFT = np.abs(FFT_of_data)
-    Frequencies_of_FFT = rfftfreq(Nd, 1/Sample_rate) #(Number of points, sample rate)
-    
+    Frequencies_of_FFT = rfftfreq(Nd, Sample_rate) #(Number of points, sample rate)
+
     return absolute_value_FFT, Frequencies_of_FFT, Sample_rate
 
 
@@ -165,7 +165,7 @@ def Prepare_export(Xdata,Ydata,Xaxis_label,Yaxis_label):
     framed_data = pd.DataFrame(atad_war, columns=[Xaxis_label, Yaxis_label])
     framed_data = framed_data.drop(framed_data.index[0])
     return framed_data
-    
+
 
 
 

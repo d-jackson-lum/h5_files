@@ -94,13 +94,13 @@ splitting = filepath.split('/')[:-1]
 Destination_folder = ''
 for folders in splitting:
     Destination_folder = Destination_folder + folders + '/'
-    
+
 
 
 do_export = check_exp_dat
 do_save = check_sav_plt
 
-#Set type to txt or csv  
+#Set type to txt or csv
 if export_type != 'txt' and export_type != 'csv':
     print('Improper export type set. Defaulting to .txt file type.')
     export_type = 'txt'
@@ -128,45 +128,47 @@ if Slice == 'All Slices':
     print(' ')
 else:
     Slices = [Slice]
-    
-    
+
+
 # Check how many plots there are, and increment up by one for the next plot
 current_figs = plt.get_fignums()
 if not current_figs:
     num_fig =  1
 else:
-    num_fig = current_figs[-1] + 1    
+    num_fig = current_figs[-1] + 1
 
 
 
 for s in Slices:
-    
+
     print('Analyzing...')
     print(Data_Channel + ": " + s)
     print(' ')
     print('------------------------------------------------')
     print(' ')
-    
+
     Data_slice = s
-    
+
     data = file[Data_Channel][Data_slice].data
     timestamp = file[Data_Channel][Data_slice].timestamps
     time_ns = (timestamp - timestamp[0])
     time_s = time_ns*1e-9
     Nd = len(data)
+    Sample_rate = Nd/time_s #Hz
     """
     Check for empty slice -> skip if empty
     """
     if Nd < 2:
         continue
-    
+
     """
     Define plotting region and perform fourier transform on the data
     """
     #This is really just collecting sample rate at this point. Ended up using
     #pylake builtin function to actually get power spectra
-    data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
+    #data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
     #start and end points of the data being analyzed
+
     if time_type == 'Milliseconds':
         start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
         end_pnt = end_time * Sample_rate / 1000 # treats time input as ms
@@ -176,26 +178,26 @@ for s in Slices:
     elif time_type == 'Minutes':
         start_pnt = start_time * 60 * Sample_rate * 60 # treats time input as ms
         end_pnt = end_time * 60 * Sample_rate # treats time input as ms
-    
+
     #some fail safes to prevent errors
     if start_pnt < 0:
         start_pnt = 0
     if end_pnt > (Nd - 1):
         end_pnt = Nd - 1
     if start_pnt >= end_pnt:
-        start_pnt = end_pnt - 1   
-    #Creat array of the desired time window    
+        start_pnt = end_pnt - 1
+    #Creat array of the desired time window
     start_plt = int(start_pnt)
     end_plt = int(end_pnt)
     data_plt = data[start_plt:end_plt]
     time_plt = time_s[start_plt:end_plt]
     ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
     #ps_data = ps_data.downsampled_by(downsampling_number)
-    
+
     """
     Save Name
     """
-    
+
     Save_as = Destination_folder + Data_Channel + ' ' + s
 
 
@@ -203,7 +205,7 @@ for s in Slices:
     Plot the data
     """
     #Settings used for plotting (applies only to raw data output, not FFT)
-    Xaxis = 'Time (s)' 
+    Xaxis = 'Time (s)'
     Yaxis = ''
     if(Data_Channel=='Force LF' or Data_Channel=='Force HF'):
         Yaxis = 'Force (pN)'
@@ -213,12 +215,12 @@ for s in Slices:
         Yaxis = 'Position (um)'
     else:
         Yaxis = 'Units'
-    
-    X_scale = 'linear' 
+
+    X_scale = 'linear'
     Y_scale = 'linear'
-    
+
     plot_title = Data_Channel + ' ' + s
-    
+
     X_plt = time_plt
     Y_plt = data_plt
 
@@ -226,7 +228,7 @@ for s in Slices:
     start_bin = min(Y_plt)
     end_bin = max(Y_plt)
     histing_offset_percent = 0.3
-    
+
     if IQR == 0:
         histing_bins = 10  # A safe default for a flat histogram
         bin_width = (end_bin - start_bin)/histing_bins
@@ -236,7 +238,7 @@ for s in Slices:
     else:
         bin_width = 2 * IQR / (Nd**(1/3)) ## based on Freedman-Diaconis rule for data spread
         histing_bins = math.ceil(abs(((end_bin - start_bin)/bin_width)) * histing_offset_percent)
-    
+
     if histing_bins > 100:
         histing_bins = int(histing_bins/2)
 
@@ -246,7 +248,7 @@ for s in Slices:
     fig.suptitle(plot_title)#('Raw data with histogram')
     raw.plot(X_plt, Y_plt, label='Data')
     raw.set(xlabel=Xaxis, ylabel=Yaxis)
-    
+
     histed, binned, _ = histo.hist(Y_plt, orientation='horizontal', bins = histing_bins, label='Histogram', color='C7')
     histo.set(xlabel='Amplitude')
     histo.axes.get_xaxis().set_visible(False)
@@ -256,11 +258,11 @@ for s in Slices:
     def gauss(x, H, A, x0, sigma):
         import numpy as np
         return H + A * np.exp(-(x - x0) ** 2 / ((2 * sigma) ** 2))
-    
+
     def dbl_gauss(x, H, A1, x1_0, sigma1, A2, x2_0, sigma2):
         import numpy as np
         return H + A1 * np.exp(-(x - x1_0) ** 2 / ((2 * sigma1) ** 2)) + A2 * np.exp(-(x - x2_0) ** 2 / ((2 * sigma2) ** 2))
-        
+
     bin_centers=[]
     i=0
     for histt in histed:
@@ -269,14 +271,14 @@ for s in Slices:
         bin_center = (bin1 + bin2)/2
         bin_centers.append(bin_center)
         i += 1
-    
+
     if check_fit_hist:
         guess_H = 0
         guess_A = max(histed)
         Guess_x0 = bin_centers[int(len(bin_centers)/2)]
         Guess_sigma = bin_centers[int(len(bin_centers)/1.5)] - bin_centers[int(len(bin_centers)/2)]
-    
-        
+
+
         try:
             guess = [guess_H, guess_A, Guess_x0, Guess_sigma]
             params, something = curve_fit(gauss, bin_centers, histed, guess)
@@ -303,7 +305,7 @@ for s in Slices:
             h_frac_2 = 0.075
             histo.annotate(peak, xy=(width_pixels*w_frac_1, height_pixels*h_frac_1), xycoords='figure pixels')
             histo.annotate(FWHM_, xy=(width_pixels*w_frac_2, height_pixels*h_frac_2), xycoords='figure pixels')
-            
+
         except:
             fit_histed = histed
             print('Warning: Histogram curve fitting failed.')
@@ -312,29 +314,29 @@ for s in Slices:
     if do_save:
         plt.savefig(Save_as + ' plot.png')
 
-    
+
     if do_export:
         framed_data = Prepare_export(X_plt,Y_plt,Xaxis,Yaxis)
         framed_data.to_csv(Save_as + '.' + export_type)
 
-    
-    
+
+
     num_fig += 1
 
     """
     Calculating the FFT and fit
     """
-    
-    Plot_FFT = check_fft_val 
-    Fit_FFT = check_fit_val 
-    
+
+    Plot_FFT = check_fft_val
+    Fit_FFT = check_fit_val
+
     #These are pylake functions. makes data into a power spectrum object that
     #gets passed through the pylake package
     data_freq = ps_data.frequency
     data_amplitude = ps_data.power
-    if Fit_FFT:    
+    if Fit_FFT:
         Fit_Results = fit_analytical_lorentzian(ps_data)
-    
+
         fc = Fit_Results[0]
         D = Fit_Results[1]
         sigma_fc = Fit_Results[2]
@@ -343,9 +345,9 @@ for s in Slices:
 
         fit_freq = ps_fit.frequency
         fit_amplitude = ps_fit.power
-        
+
         A = fit_amplitude[0]
-        
+
 
     if Plot_FFT or Fit_FFT:
         plt.figure(num=num_fig)#(figsize=(8, 6))
@@ -367,7 +369,7 @@ for s in Slices:
             plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
             plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
             plt.annotate(Amplitude, xy=(width_pixels*fft_w_frac3, height_pixels*fft_h_frac3), xycoords='figure pixels')
-            
+
             print('Power spectrum fitting values')
             print(Corner)
             print(Diffusion)
@@ -375,13 +377,13 @@ for s in Slices:
             print(' ')
             print('------------------------------------------------')
             print(' ')
-            
+
         plt.xlabel('Frequencies')
         plt.ylabel('Amplitudes (V**2/Hz)')
         plt.xscale('log')
         plt.yscale('log')
         plt.title('FFT of ' + plot_title)
-        
+
         if do_save:
             plt.savefig(Save_as + ' FFT plot.png')
         if do_export:
@@ -396,11 +398,11 @@ for s in Slices:
                 FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
             else:
                 framed_data.to_csv(Save_as + ' FFT.' + export_type)
-                
+
         num_fig += 1
 print('Analysis completed')
-fig.show()  
-plt.show()   
+fig.show()
+plt.show()
 
 
 
