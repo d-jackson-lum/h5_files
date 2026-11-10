@@ -232,7 +232,7 @@ check_save = ttk.Checkbutton(window, text='Save Plot?', command=check_sav, varia
 check_fit_hist = ttk.Checkbutton(window, text='Fit Histogram? (gaussian)', command=check_hist, variable=fit_hist)
 
 selected = StringVar()
-radio_ms = ttk.Radiobutton(window, text='Millieconds', variable=selected, value='Millieconds', command=set_time_type)
+radio_ms = ttk.Radiobutton(window, text='Milliseconds', variable=selected, value='Milliseconds', command=set_time_type)
 radio_s = ttk.Radiobutton(window, text='Seconds', variable=selected, value='Seconds', command=set_time_type)
 radio_min = ttk.Radiobutton(window, text='Minutes', variable=selected, value='Minutes', command=set_time_type)
 radio_ms.invoke()

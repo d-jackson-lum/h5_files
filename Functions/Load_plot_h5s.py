@@ -111,7 +111,7 @@ Choose the data column to load
 Finds all slices present for the chosen data channel
 Will proccess all data associated with this channel #e.g. Force HF: Force 1x, Force 2x, etc.
 """
-print('Plots will appear after annalysis is completed')
+print('Plots will appear after analysis is completed')
 print(' ')
 print('------------------------------------------------')
 print(' ')
@@ -153,8 +153,9 @@ for s in Slices:
     timestamp = file[Data_Channel][Data_slice].timestamps
     time_ns = (timestamp - timestamp[0])
     time_s = time_ns*1e-9
+    delta_t_s = time_s[1] - time_s[0]
     Nd = len(data)
-    Sample_rate = Nd/time_s #Hz
+    Sample_rate = 1/delta_t_s #Hz
     """
     Check for empty slice -> skip if empty
     """
@@ -168,10 +169,15 @@ for s in Slices:
     #pylake builtin function to actually get power spectra
     #data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
     #start and end points of the data being analyzed
-
+    print('----')
+    print('Start time: ' + str(start_time) + ' ' + time_type)
+    print('End time: ' + str(end_time) + ' ' + time_type)
+    print('Sample rate: ' + str(Sample_rate) + ' Hz')
+    print('Number of data points: ' + str(Nd))
+    print('----')
     if time_type == 'Milliseconds':
         start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
-        end_pnt = end_time * Sample_rate / 1000 # treats time input as ms
+        end_pnt = end_time * Sample_rate / 1000 # treats time input as m
     elif time_type == 'Seconds':
         start_pnt = start_time * Sample_rate # treats time input as s
         end_pnt = end_time * Sample_rate # treats time input as s
@@ -180,6 +186,7 @@ for s in Slices:
         end_pnt = end_time * 60 * Sample_rate # treats time input as ms
 
     #some fail safes to prevent errors
+
     if start_pnt < 0:
         start_pnt = 0
     if end_pnt > (Nd - 1):
