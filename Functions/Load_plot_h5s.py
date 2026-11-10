@@ -141,11 +141,11 @@ else:
 
 for s in Slices:
 
-    print('Analyzing...')
-    print(Data_Channel + ": " + s)
+    print('Analyzing ' + Data_Channel + ": " + s)
     print(' ')
     print('------------------------------------------------')
     print(' ')
+    
 
     Data_slice = s
 
@@ -156,6 +156,13 @@ for s in Slices:
     delta_t_s = time_s[1] - time_s[0]
     Nd = len(data)
     Sample_rate = 1/delta_t_s #Hz
+
+    print('Sample rate: ' + str(Sample_rate) + ' Hz')
+    print('Total number of data points: ' + str(Nd))
+    print(' ')
+    print('------------------------------------------------')
+    print(' ')
+
     """
     Check for empty slice -> skip if empty
     """
@@ -169,12 +176,7 @@ for s in Slices:
     #pylake builtin function to actually get power spectra
     #data_fft, freq_fft, Sample_rate = Get_FFT(data, time_s[0], time_s[1]) #outputs (FFT_of_data, Frequencies_of_data, Sample_rate)
     #start and end points of the data being analyzed
-    print('----')
-    print('Start time: ' + str(start_time) + ' ' + time_type)
-    print('End time: ' + str(end_time) + ' ' + time_type)
-    print('Sample rate: ' + str(Sample_rate) + ' Hz')
-    print('Number of data points: ' + str(Nd))
-    print('----')
+
     if time_type == 'Milliseconds':
         start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
         end_pnt = end_time * Sample_rate / 1000 # treats time input as ms
@@ -204,7 +206,14 @@ for s in Slices:
     start_plt = int(start_pnt)
     end_plt = int(end_pnt)
     data_plt = data[start_plt:end_plt]
-    time_plt = time_s[start_plt:end_plt]    
+    time_plt = time_s[start_plt:end_plt]  
+
+    print('Start time: ' + str(start_time) + ' ' + time_type)
+    print('End time: ' + str(end_time) + ' ' + time_type)
+    print(str(len(data_plt)) + ' data points will be analyzed')
+    print(' ') 
+    print('------------------------------------------------')
+    print(' ')  
 
     """
     Save Name
@@ -235,8 +244,6 @@ for s in Slices:
 
     X_plt = time_plt
     Y_plt = data_plt
-
-    print(len(data_plt))
 
     IQR = sp.stats.iqr(Y_plt)
     start_bin = min(Y_plt)
