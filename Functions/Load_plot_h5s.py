@@ -177,7 +177,7 @@ for s in Slices:
     print('----')
     if time_type == 'Milliseconds':
         start_pnt = start_time * Sample_rate / 1000 # treats time input as ms
-        end_pnt = end_time * Sample_rate / 1000 # treats time input as m
+        end_pnt = end_time * Sample_rate / 1000 # treats time input as ms
     elif time_type == 'Seconds':
         start_pnt = start_time * Sample_rate # treats time input as s
         end_pnt = end_time * Sample_rate # treats time input as s
@@ -185,21 +185,26 @@ for s in Slices:
         start_pnt = start_time * 60 * Sample_rate * 60 # treats time input as ms
         end_pnt = end_time * 60 * Sample_rate # treats time input as ms
 
+
     #some fail safes to prevent errors
 
     if start_pnt < 0:
         start_pnt = 0
+        print('Warning: Start time is out of bounds. Defaulting to first data point.')
     if end_pnt > (Nd - 1):
         end_pnt = Nd - 1
+        print('Warning: Time window is too large. Defaulting to last data point.')
+    if end_pnt < 1:
+        end_pnt = start_pnt + 1
+        print('Warning: Time window is too small. Defaulting to 1 data point.')
     if start_pnt >= end_pnt:
-        start_pnt = end_pnt - 1
+        print('Warning: Start time is greater than or equal to end time. Defaulting to 1 data point.')
+        end_pnt = start_pnt + 1
     #Creat array of the desired time window
     start_plt = int(start_pnt)
     end_plt = int(end_pnt)
     data_plt = data[start_plt:end_plt]
-    time_plt = time_s[start_plt:end_plt]
-    ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
-    #ps_data = ps_data.downsampled_by(downsampling_number)
+    time_plt = time_s[start_plt:end_plt]    
 
     """
     Save Name
@@ -231,6 +236,8 @@ for s in Slices:
     X_plt = time_plt
     Y_plt = data_plt
 
+    print(len(data_plt))
+
     IQR = sp.stats.iqr(Y_plt)
     start_bin = min(Y_plt)
     end_bin = max(Y_plt)
@@ -253,7 +260,10 @@ for s in Slices:
     gs = fig.add_gridspec(1, 2, hspace=0, wspace=0.005, width_ratios=[2,1])
     (raw, histo) = gs.subplots(sharey=True)
     fig.suptitle(plot_title)#('Raw data with histogram')
-    raw.plot(X_plt, Y_plt, label='Data')
+    if len(X_plt) < 2:
+        raw.plot(X_plt, Y_plt, marker='o', label='Data')
+    else:
+        raw.plot(X_plt, Y_plt, label='Data')
     raw.set(xlabel=Xaxis, ylabel=Yaxis)
 
     histed, binned, _ = histo.hist(Y_plt, orientation='horizontal', bins = histing_bins, label='Histogram', color='C7')
@@ -339,74 +349,79 @@ for s in Slices:
 
     #These are pylake functions. makes data into a power spectrum object that
     #gets passed through the pylake package
-    data_freq = ps_data.frequency
-    data_amplitude = ps_data.power
-    if Fit_FFT:
-        Fit_Results = fit_analytical_lorentzian(ps_data)
+    try:
+        ps_data = PowerSpectrum.from_data(data_plt, Sample_rate)
 
-        fc = Fit_Results[0]
-        D = Fit_Results[1]
-        sigma_fc = Fit_Results[2]
-        sigma_D = Fit_Results[3]
-        ps_fit = Fit_Results[4]
-
-        fit_freq = ps_fit.frequency
-        fit_amplitude = ps_fit.power
-
-        A = fit_amplitude[0]
-
-
-    if Plot_FFT or Fit_FFT:
-        plt.figure(num=num_fig)#(figsize=(8, 6))
-        #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
-        plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
+        data_freq = ps_data.frequency
+        data_amplitude = ps_data.power
         if Fit_FFT:
-            plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
-            Corner = 'fc: ' + str('%s' % float('%.5g' % fc))
-            Diffusion = 'D: ' + str('%s' % float('%.5g' % D))
-            Amplitude = 'A: ' + str('%s' % float('%.5g' % A))
-            Sigma_Corner = 'Sigma fc: ' + str('%s' % float('%.5g' % sigma_fc))
-            Sigma_Diff = 'Sigma D: ' + str('%s' % float('%.5g' % sigma_D))
-            fft_w_frac = 0.15
-            fft_h_frac = 0.25
-            fft_w_frac2 = 0.15
-            fft_h_frac2 = 0.20
-            fft_w_frac3 = 0.15
-            fft_h_frac3 = 0.15
-            plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
-            plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
-            plt.annotate(Amplitude, xy=(width_pixels*fft_w_frac3, height_pixels*fft_h_frac3), xycoords='figure pixels')
+            Fit_Results = fit_analytical_lorentzian(ps_data)
 
-            print('Power spectrum fitting values')
-            print(Corner)
-            print(Diffusion)
-            print(Amplitude)
-            print(' ')
-            print('------------------------------------------------')
-            print(' ')
+            fc = Fit_Results[0]
+            D = Fit_Results[1]
+            sigma_fc = Fit_Results[2]
+            sigma_D = Fit_Results[3]
+            ps_fit = Fit_Results[4]
 
-        plt.xlabel('Frequencies')
-        plt.ylabel('Amplitudes (V**2/Hz)')
-        plt.xscale('log')
-        plt.yscale('log')
-        plt.title('FFT of ' + plot_title)
-
-        if do_save:
-            plt.savefig(Save_as + ' FFT plot.png')
-        if do_export:
-            data_freq = ps_data.frequency
-            data_amplitude = ps_data.power
             fit_freq = ps_fit.frequency
             fit_amplitude = ps_fit.power
-            framed_data = Prepare_export(data_freq,data_amplitude,'Frequencies','Amplitudes')
-            if Fit_FFT:
-                framed_fit = Prepare_export(fit_freq,fit_amplitude,'Fit Frequencies','Fit Amplitudes')
-                FFT_with_fit = pd.concat([framed_data,framed_fit])
-                FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
-            else:
-                framed_data.to_csv(Save_as + ' FFT.' + export_type)
 
-        num_fig += 1
+            A = fit_amplitude[0]
+
+
+        if Plot_FFT or Fit_FFT:
+            plt.figure(num=num_fig)#(figsize=(8, 6))
+            #Ignore very first data point in plotting FFT. Keeps giving  a miniscule value (e.g. 1e-41)
+            plt.plot(data_freq[1:], data_amplitude[1:], label='Data', color='C7') #C7 is a gray color
+            if Fit_FFT:
+                plt.plot(fit_freq[1:], fit_amplitude[1:], label='Lorentzian Fit', color='C3') #C3 is a red color
+                Corner = 'fc: ' + str('%s' % float('%.5g' % fc))
+                Diffusion = 'D: ' + str('%s' % float('%.5g' % D))
+                Amplitude = 'A: ' + str('%s' % float('%.5g' % A))
+                Sigma_Corner = 'Sigma fc: ' + str('%s' % float('%.5g' % sigma_fc))
+                Sigma_Diff = 'Sigma D: ' + str('%s' % float('%.5g' % sigma_D))
+                fft_w_frac = 0.15
+                fft_h_frac = 0.25
+                fft_w_frac2 = 0.15
+                fft_h_frac2 = 0.20
+                fft_w_frac3 = 0.15
+                fft_h_frac3 = 0.15
+                plt.annotate(Corner, xy=(width_pixels*fft_w_frac, height_pixels*fft_h_frac), xycoords='figure pixels')
+                plt.annotate(Diffusion, xy=(width_pixels*fft_w_frac2, height_pixels*fft_h_frac2), xycoords='figure pixels')
+                plt.annotate(Amplitude, xy=(width_pixels*fft_w_frac3, height_pixels*fft_h_frac3), xycoords='figure pixels')
+
+                print('Power spectrum fitting values')
+                print(Corner)
+                print(Diffusion)
+                print(Amplitude)
+                print(' ')
+                print('------------------------------------------------')
+                print(' ')
+
+            plt.xlabel('Frequencies')
+            plt.ylabel('Amplitudes (V**2/Hz)')
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.title('FFT of ' + plot_title)
+
+            if do_save:
+                plt.savefig(Save_as + ' FFT plot.png')
+            if do_export:
+                data_freq = ps_data.frequency
+                data_amplitude = ps_data.power
+                fit_freq = ps_fit.frequency
+                fit_amplitude = ps_fit.power
+                framed_data = Prepare_export(data_freq,data_amplitude,'Frequencies','Amplitudes')
+                if Fit_FFT:
+                    framed_fit = Prepare_export(fit_freq,fit_amplitude,'Fit Frequencies','Fit Amplitudes')
+                    FFT_with_fit = pd.concat([framed_data,framed_fit])
+                    FFT_with_fit.to_csv(Save_as + ' FFT with fit.' + export_type)
+                else:
+                    framed_data.to_csv(Save_as + ' FFT.' + export_type)
+
+            num_fig += 1
+    except ZeroDivisionError:
+                print("Getting a divide by zero error when calculating the power spectrum.")
 print('Analysis completed')
 fig.show()
 plt.show()
